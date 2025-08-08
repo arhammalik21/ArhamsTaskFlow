@@ -13,12 +13,18 @@
 
     <h2>Your Tasks:</h2>
     <ul>
-        {% for task in tasks %}
-            <li>{{ task }}</li>
-        {% else %}
-            <li>No tasks yet!</li>
-        {% endfor %}
-    </ul>
+    {% for task in tasks %}
+        <li>
+            {{ task.text }}
+            <a href="{{ url_for('delete_task', task_id=task.id) }}" style="color:red; text-decoration:none; margin-left:10px;">[Delete]</a>
+        </li>
+    {% else %}
+        <li>No tasks yet!</li>
+    {% endfor %}
+</ul>
+                   
 
 </body>
 </html>
+
+
