@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8" />
     <title>Task Manager</title>
+    <style>
+        .completed { text-decoration: line-through; color: gray; }
+    </style>
 </head>
 <body>
     <h1>Welcome to Task Manager</h1>
 
-    <form method="POST">
+    <form method="POST" action="{{ url_for('index') }}">
         <input type="text" name="task" placeholder="Enter a task" required>
         <button type="submit">Add Task</button>
     </form>
@@ -14,17 +18,18 @@
     <h2>Your Tasks:</h2>
     <ul>
     {% for task in tasks %}
-        <li>
+        <li {% if task.completed %}class="completed"{% endif %}>
             {{ task.text }}
-            <a href="{{ url_for('delete_task', task_id=task.id) }}" style="color:red; text-decoration:none; margin-left:10px;">[Delete]</a>
+            {% if not task.completed %}
+                <a href="{{ url_for('complete_task', task_id=task.id) }}" style="color:green; margin-left:10px;">[Complete]</a>
+            {% else %}
+                <a href="{{ url_for('complete_task', task_id=task.id) }}" style="color:orange; margin-left:10px;">[Undo]</a>
+            {% endif %}
+            <a href="{{ url_for('delete_task', task_id=task.id) }}" style="color:red; margin-left:10px;">[Delete]</a>
         </li>
     {% else %}
         <li>No tasks yet!</li>
     {% endfor %}
-</ul>
-                   
-
+    </ul>
 </body>
 </html>
-
-
