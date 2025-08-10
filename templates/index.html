@@ -1,35 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title>Arham's TaskFlow</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arham’s TaskFlow</title>
     <style>
-        .completed { text-decoration: line-through; color: gray; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            margin: 20px auto;
+            max-width: 400px;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            outline: none;
+        }
+        button {
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        li {
+            display: flex;
+            justify-content: space-between;
+            background: white;
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 4px;
+            align-items: center;
+        }
+        li.completed span {
+            text-decoration: line-through;
+            color: gray;
+        }
+        a {
+            text-decoration: none;
+            margin-left: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #dc3545;
+        }
+        a.complete {
+            color: #28a745;
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
-    <h1>Welcome to Arham's TaskFlow</h1>
+    <h1>Arham’s TaskFlow</h1>
 
-    <form method="POST" action="{{ url_for('index') }}">
-        <input type="text" name="task" placeholder="Enter a task" required>
-        <button type="submit">Add Task</button>
+    <form action="{{ url_for('add_task') }}" method="POST">
+        <input type="text" name="task" placeholder="Enter a task" required />
+        <button type="submit">Add</button>
     </form>
 
-    <h2>Your Tasks:</h2>
     <ul>
-    {% for task in tasks %}
-        <li {% if task.completed %}class="completed"{% endif %}>
-            {{ task.text }}
-            {% if not task.completed %}
-                <a href="{{ url_for('complete_task', task_id=task.id) }}" style="color:green; margin-left:10px;">[Complete]</a>
-            {% else %}
-                <a href="{{ url_for('complete_task', task_id=task.id) }}" style="color:orange; margin-left:10px;">[Undo]</a>
-            {% endif %}
-            <a href="{{ url_for('delete_task', task_id=task.id) }}" style="color:red; margin-left:10px;">[Delete]</a>
+        {% for task in tasks %}
+        <li class="{% if task.completed %}completed{% endif %}">
+            <span>{{ task.name }}</span>
+            <div>
+                {% if not task.completed %}
+                <a href="{{ url_for('complete_task', task_id=loop.index0) }}" class="complete">✔</a>
+                {% endif %}
+                <a href="{{ url_for('delete_task', task_id=loop.index0) }}">✖</a>
+            </div>
         </li>
-    {% else %}
+        {% else %}
         <li>No tasks yet!</li>
-    {% endfor %}
+        {% endfor %}
     </ul>
 </body>
 </html>
