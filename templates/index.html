@@ -14,13 +14,9 @@
             border-radius: 6px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        h1 {
-            text-align: center;
-        }
-        form {
-            display: flex;
-            margin-bottom: 20px;
-        }
+        h1 { text-align: center; }
+        form { display: flex; margin-bottom: 20px; }
+        label { display:none; }
         input[type="text"] {
             flex-grow: 1;
             padding: 10px;
@@ -36,10 +32,7 @@
             border-radius: 0 4px 4px 0;
             cursor: pointer;
         }
-        ul {
-            list-style: none;
-            padding-left: 0;
-        }
+        ul { list-style: none; padding-left: 0; }
         li {
             display: flex;
             justify-content: space-between;
@@ -64,13 +57,30 @@
             color: #28a745;
             margin-right: 10px;
         }
+        .flash {
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .flash-success { background: #d4edda; color: #155724; }
+        .flash-info { background: #cce5ff; color: #004085; }
+        .flash-warning { background: #fff3cd; color: #856404; }
     </style>
 </head>
 <body>
     <h1>Arham’s TaskFlow</h1>
 
-    <form action="{{ url_for('add_task') }}" method="POST">
-        <input type="text" name="task" placeholder="Enter a task" required />
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash flash-{{category}}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('index') }}" method="POST">
+        {{ form.hidden_tag() }}
+        {{ form.task(placeholder="Enter a task", required=True) }}
         <button type="submit">Add</button>
     </form>
 
@@ -79,11 +89,17 @@
         <li class="{% if task.completed %}completed{% endif %}">
             <span>{{ task.name }}</span>
             <div>
-                {% if not task.completed %}
-                <a href="{{ url_for('complete_task', task_id=loop.index0) }}" class="complete">✔</a>
-                {% endif %}
-                <a href="{{ url_for('delete_task', task_id=loop.index0) }}">✖</a>
-            </div>
+    {% if not task.completed %}
+    <form action="{{ url_for('complete_task', task_id=task.id) }}" method="get" style="display:inline;">
+        <button type="submit" style="background: #28a745; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">Complete</button>
+    </form>
+    {% endif %}
+    <form action="{{ url_for('delete_task', task_id=task.id) }}" method="get" style="display:inline;" onsubmit="return confirm('Delete this task?');">
+        <button type="submit" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">Delete</button>
+    </form>
+</div>
+
+
         </li>
         {% else %}
         <li>No tasks yet!</li>
