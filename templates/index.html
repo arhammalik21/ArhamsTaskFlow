@@ -16,7 +16,7 @@
         }
         h1 { text-align: center; }
         form { display: flex; margin-bottom: 20px; }
-        label { display:none; }
+        label { display: none; }
         input[type="text"] {
             flex-grow: 1;
             padding: 10px;
@@ -46,17 +46,6 @@
             text-decoration: line-through;
             color: gray;
         }
-        a {
-            text-decoration: none;
-            margin-left: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #dc3545;
-        }
-        a.complete {
-            color: #28a745;
-            margin-right: 10px;
-        }
         .flash {
             padding: 8px;
             border-radius: 4px;
@@ -70,6 +59,7 @@
 <body>
     <h1>Arham’s TaskFlow</h1>
 
+    <!-- Flash messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -78,32 +68,70 @@
       {% endif %}
     {% endwith %}
 
+    <!-- Form validation error -->
+    {% if form.task.errors %}
+      <div class="flash flash-warning">
+        {% for error in form.task.errors %}
+          {{ error }}
+        {% endfor %}
+      </div>
+    {% endif %}
+
     <form action="{{ url_for('index') }}" method="POST">
         {{ form.hidden_tag() }}
         {{ form.task(placeholder="Enter a task", required=True) }}
         <button type="submit">Add</button>
     </form>
 
+    <!-- Incomplete Tasks -->
+    {% set incomplete_tasks = tasks | selectattr('completed', 'equalto', False) | list %}
+    <h2>Incomplete Tasks</h2>
     <ul>
-        {% for task in tasks %}
-        <li class="{% if task.completed %}completed{% endif %}">
+      {% if incomplete_tasks %}
+        {% for task in incomplete_tasks %}
+          <li>
             <span>{{ task.name }}</span>
             <div>
-    {% if not task.completed %}
-    <form action="{{ url_for('complete_task', task_id=task.id) }}" method="get" style="display:inline;">
-        <button type="submit" style="background: #28a745; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">Complete</button>
-    </form>
-    {% endif %}
-    <form action="{{ url_for('delete_task', task_id=task.id) }}" method="get" style="display:inline;" onsubmit="return confirm('Delete this task?');">
-        <button type="submit" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">Delete</button>
-    </form>
-</div>
+              <form action="{{ url_for('complete_task', task_id=task.id) }}" method="get" style="display:inline;">
+    <button type="submit" style="background: #28a745; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; margin-right:5px;">
+        Complete
+    </button>
+</form>
+<form action="{{ url_for('delete_task', task_id=task.id) }}" method="get" style="display:inline;" onsubmit="return confirm('Delete this task?');">
+    <button type="submit" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">
+        Delete
+    </button>
+</form>
 
-
-        </li>
-        {% else %}
-        <li>No tasks yet!</li>
+            </div>
+          </li>
         {% endfor %}
+      {% else %}
+        <li>No incomplete tasks!</li>
+      {% endif %}
+    </ul>
+
+    <!-- Completed Tasks -->
+    {% set completed_tasks = tasks | selectattr('completed', 'equalto', True) | list %}
+    <h2>Completed Tasks</h2>
+    <ul>
+      {% if completed_tasks %}
+        {% for task in completed_tasks %}
+          <li class="completed">
+            <span>{{ task.name }}</span>
+            <div>
+              <form action="{{ url_for('delete_task', task_id=task.id) }}" method="get" style="display:inline;" onsubmit="return confirm('Delete this task?');">
+    <button type="submit" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">
+        Delete
+    </button>
+</form>
+
+            </div>
+          </li>
+        {% endfor %}
+      {% else %}
+        <li>No completed tasks!</li>
+      {% endif %}
     </ul>
 </body>
 </html>
