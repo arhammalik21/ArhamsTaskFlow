@@ -14,6 +14,23 @@ class TaskForm(FlaskForm):
 tasks = []
 next_id = 1  # Unique ID for every new task
 
+from flask import request
+
+@app.route("/edit/<int:task_id>", methods=["GET", "POST"])
+def edit_task(task_id):
+    # Find the task to edit
+    task = next((t for t in tasks if t["id"] == task_id), None)
+    if not task:
+        abort(404)
+    form = TaskForm(obj=task)
+    if request.method == "POST" and form.validate_on_submit():
+        task_name = form.task.data.strip()
+        task["name"] = task_name
+        flash("Task updated!", "info")
+        return redirect(url_for("index"))
+    return render_template("edit.html", form=form, task=task)
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     global next_id

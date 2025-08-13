@@ -103,6 +103,12 @@
     </button>
 </form>
 
+<form action="{{ url_for('edit_task', task_id=task.id) }}" method="get" style="display:inline;">
+    <button type="submit" style="background:#ffc107; color:#232323; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; margin-right:4px;">
+        Edit
+    </button>
+</form>
+
             </div>
           </li>
         {% endfor %}
@@ -125,6 +131,13 @@
         Delete
     </button>
 </form>
+
+<form action="{{ url_for('edit_task', task_id=task.id) }}" method="get" style="display:inline;">
+    <button type="submit" style="background:#ffc107; color:#232323; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; margin-right:4px;">
+        Edit
+    </button>
+</form>
+
 
             </div>
           </li>
