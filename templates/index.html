@@ -3,49 +3,21 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Arham’s TaskFlow</title>
+    <title>DaySavvy</title>
+    <!-- Bootstrap CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Montserrat', Arial, sans-serif;
             background: #f9f9f9;
-            margin: 20px auto;
-            max-width: 400px;
-            padding: 10px;
-            border-radius: 6px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin: 0;
+            padding: 0;
         }
-        h1 { text-align: center; }
-        form { display: flex; margin-bottom: 20px; }
-        label { display: none; }
-        input[type="text"] {
-            flex-grow: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px 0 0 4px;
-            outline: none;
+        h1, h2 {
+            font-family: 'Montserrat', Arial, sans-serif;
         }
-        button {
-            padding: 10px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 0 4px 4px 0;
-            cursor: pointer;
-        }
-        ul { list-style: none; padding-left: 0; }
-        li {
-            display: flex;
-            justify-content: space-between;
-            background: white;
-            margin-bottom: 8px;
-            padding: 10px;
-            border-radius: 4px;
-            align-items: center;
-        }
-        li.completed span {
-            text-decoration: line-through;
-            color: gray;
-        }
+        .container { max-width: 500px; margin: 0 auto; }
         .flash {
             padding: 8px;
             border-radius: 4px;
@@ -54,97 +26,115 @@
         .flash-success { background: #d4edda; color: #155724; }
         .flash-info { background: #cce5ff; color: #004085; }
         .flash-warning { background: #fff3cd; color: #856404; }
+        .card { margin-bottom: 12px; }
+        .completed-task { text-decoration: line-through; color: gray; }
     </style>
 </head>
 <body>
-    <h1>Arham’s TaskFlow</h1>
+    <h1 class="display-4 text-primary text-center my-4" style="letter-spacing:2px;font-weight:700;">DaySavvy</h1>
+    <div class="container mt-4">
 
-    <!-- Flash messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="flash flash-{{category}}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash flash-{{category}}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
 
-    <!-- Form validation error -->
-    {% if form.task.errors %}
-      <div class="flash flash-warning">
-        {% for error in form.task.errors %}
-          {{ error }}
-        {% endfor %}
-      </div>
-    {% endif %}
+        <!-- Form validation error -->
+        {% if form.task.errors %}
+          <div class="flash flash-warning">
+            {% for error in form.task.errors %}
+              {{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
 
-    <form action="{{ url_for('index') }}" method="POST">
-        {{ form.hidden_tag() }}
-        {{ form.task(placeholder="Enter a task", required=True) }}
-        <button type="submit">Add</button>
-    </form>
+        <!-- Add Task Form -->
+        <form action="{{ url_for('index') }}" method="POST" class="d-flex mb-4">
+            {{ form.hidden_tag() }}
+            {{ form.task(placeholder="Enter a task", required=True, class_="form-control me-2") }}
+            {{ form.due_date(class_="form-control me-2") }}
+            <button type="submit" class="btn btn-success">Add</button>
+        </form>
 
-    <!-- Incomplete Tasks -->
-    {% set incomplete_tasks = tasks | selectattr('completed', 'equalto', False) | list %}
-    <h2>Incomplete Tasks</h2>
-    <ul>
-      {% if incomplete_tasks %}
-        {% for task in incomplete_tasks %}
-          <li>
-            <span>{{ task.name }}</span>
-            <div>
-              <form action="{{ url_for('complete_task', task_id=task.id) }}" method="get" style="display:inline;">
-    <button type="submit" style="background: #28a745; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; margin-right:5px;">
-        Complete
-    </button>
-</form>
-<form action="{{ url_for('delete_task', task_id=task.id) }}" method="get" style="display:inline;" onsubmit="return confirm('Delete this task?');">
-    <button type="submit" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">
-        Delete
-    </button>
-</form>
+        <!-- Incomplete Tasks -->
+        {% set incomplete_tasks = tasks | selectattr('completed', 'equalto', False) | list %}
+        <h2>Incomplete Tasks</h2>
+        <div class="row">
+          {% if incomplete_tasks %}
+            {% for task in incomplete_tasks %}
+              <div class="col-12">
+                <div class="card shadow-sm">
+                  <div class="card-body d-flex justify-content-between align-items-center">
+                    <span>
+                        {{ task.name }}
+                        {% if task.due_date %}
+                            <span class="badge bg-secondary ms-2">
+                                Due: {{ task.due_date.strftime('%Y-%m-%d') }}
+                            </span>
+                            {% if task.due_date < current_date %}
+                                <span class="badge bg-danger ms-2">Overdue!</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-light ms-2">No due date</span>
+                        {% endif %}
+                    </span>
+                    <div>
+                        <form action="{{ url_for('complete_task', task_id=task.id) }}" method="get" style="display:inline;">
+                            <button class="btn btn-success btn-sm me-1">Complete</button>
+                        </form>
+                        <form action="{{ url_for('edit_task', task_id=task.id) }}" method="get" style="display:inline;">
+                            <button class="btn btn-warning btn-sm me-1">Edit</button>
+                        </form>
+                        <form action="{{ url_for('delete_task', task_id=task.id) }}" method="get" style="display:inline;" onsubmit="return confirm('Delete this task?');">
+                            <button class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-muted">No incomplete tasks!</p>
+          {% endif %}
+        </div>
 
-<form action="{{ url_for('edit_task', task_id=task.id) }}" method="get" style="display:inline;">
-    <button type="submit" style="background:#ffc107; color:#232323; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; margin-right:4px;">
-        Edit
-    </button>
-</form>
-
-            </div>
-          </li>
-        {% endfor %}
-      {% else %}
-        <li>No incomplete tasks!</li>
-      {% endif %}
-    </ul>
-
-    <!-- Completed Tasks -->
-    {% set completed_tasks = tasks | selectattr('completed', 'equalto', True) | list %}
-    <h2>Completed Tasks</h2>
-    <ul>
-      {% if completed_tasks %}
-        {% for task in completed_tasks %}
-          <li class="completed">
-            <span>{{ task.name }}</span>
-            <div>
-              <form action="{{ url_for('delete_task', task_id=task.id) }}" method="get" style="display:inline;" onsubmit="return confirm('Delete this task?');">
-    <button type="submit" style="background: #dc3545; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">
-        Delete
-    </button>
-</form>
-
-<form action="{{ url_for('edit_task', task_id=task.id) }}" method="get" style="display:inline;">
-    <button type="submit" style="background:#ffc107; color:#232323; border:none; border-radius:4px; padding:5px 10px; cursor:pointer; margin-right:4px;">
-        Edit
-    </button>
-</form>
-
-
-            </div>
-          </li>
-        {% endfor %}
-      {% else %}
-        <li>No completed tasks!</li>
-      {% endif %}
-    </ul>
+        <!-- Completed Tasks -->
+        {% set completed_tasks = tasks | selectattr('completed', 'equalto', True) | list %}
+        <h2>Completed Tasks</h2>
+        <div class="row">
+          {% if completed_tasks %}
+            {% for task in completed_tasks %}
+              <div class="col-12">
+                <div class="card bg-light shadow-sm">
+                  <div class="card-body d-flex justify-content-between align-items-center">
+                    <span class="completed-task">
+                        {{ task.name }}
+                        {% if task.due_date %}
+                            <span class="badge bg-secondary ms-2">
+                                Due: {{ task.due_date.strftime('%Y-%m-%d') }}
+                            </span>
+                        {% endif %}
+                    </span>
+                    <div>
+                        <form action="{{ url_for('edit_task', task_id=task.id) }}" method="get" style="display:inline;">
+                            <button class="btn btn-warning btn-sm me-1">Edit</button>
+                        </form>
+                        <form action="{{ url_for('delete_task', task_id=task.id) }}" method="get" style="display:inline;" onsubmit="return confirm('Delete this task?');">
+                            <button class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-muted">No completed tasks!</p>
+          {% endif %}
+        </div>
+    </div>
 </body>
 </html>
